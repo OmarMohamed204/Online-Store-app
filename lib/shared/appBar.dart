@@ -1,0 +1,60 @@
+import 'package:flutter/material.dart';
+import 'package:loginpages/pages/checkout.dart';
+import 'package:loginpages/provider/cart.dart';
+import 'package:provider/provider.dart';
+
+class ProductAndPrice extends StatelessWidget {
+  const ProductAndPrice({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final value = Provider.of<Cart>(context);
+
+    return Row(
+      children: [
+        Stack(
+          children: [
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CheckOut()),
+                );
+              },
+              icon: Icon(
+                Icons.add_shopping_cart,
+                color: Colors.white,
+                size: 30,
+              ),
+            ),
+
+            Positioned(
+              bottom: 22,
+              child: Container(
+                padding: EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  "${value.itemCount}",
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color.fromARGB(255, 0, 0, 0),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: Text(
+            "\$ ${value.pricee}",
+            style: TextStyle(color: Colors.white, fontSize: 19),
+          ),
+        ),
+      ],
+    );
+  }
+}

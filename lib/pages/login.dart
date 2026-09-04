@@ -1,0 +1,92 @@
+import 'package:flutter/material.dart';
+import 'package:loginpages/pages/register.dart';
+import 'package:loginpages/shared/colors.dart';
+import 'package:loginpages/shared/constant.dart';
+
+class Login extends StatelessWidget {
+  const Login({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Color.fromARGB(255, 247, 247, 247),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 64),
+
+                TextField(
+                  keyboardType: TextInputType.emailAddress,
+                  obscureText: false,
+                  decoration: decorationTextField.copyWith(
+                    hintText: "Enter Your Email",
+                  ),
+                ),
+
+                SizedBox(height: 33),
+
+                TextField(
+                  keyboardType: TextInputType.text,
+                  obscureText: true,
+                  decoration: decorationTextField.copyWith(
+                    hintText: "Enter Your Password",
+                  ),
+                ),
+
+                SizedBox(height: 33),
+
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(BTNgreen),
+
+                    padding: MaterialStateProperty.all(EdgeInsets.all(12)),
+
+                    shape: MaterialStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  child: Text("Sign in", style: TextStyle(color: Colors.white)),
+                ),
+
+                SizedBox(height: 33),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Don't have an account?",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Register()),
+                        );
+                      },
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
