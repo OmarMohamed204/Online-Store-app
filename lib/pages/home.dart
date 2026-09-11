@@ -6,12 +6,27 @@ import 'package:loginpages/pages/checkout.dart';
 import 'package:loginpages/pages/details_screen1.dart';
 import 'package:loginpages/pages/details_screen2.dart';
 import 'package:loginpages/pages/details_screen3.dart';
+import 'package:loginpages/pages/favorite_items.dart';
+import 'package:loginpages/pages/profile.dart';
 import 'package:loginpages/provider/cart.dart';
+import 'package:loginpages/provider/favorites.dart';
+import 'package:loginpages/provider/theme.dart';
 import 'package:loginpages/shared/appBar.dart';
 import 'package:provider/provider.dart';
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  TextEditingController searchController = TextEditingController();
+
+  List<Car> filteredCars = cars;
+  List<Tshirt> filteredTshirts = tshirts;
+  List<Flower> filteredFlowers = flowers;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +71,17 @@ class Home extends StatelessWidget {
                 ),
 
                 ListTile(
+                  title: Text("profile"),
+                  leading: Icon(Icons.person),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Profile()),
+                    );
+                  },
+                ),
+
+                ListTile(
                   title: Text("My Products"),
                   leading: Icon(Icons.add_shopping_cart),
                   onTap: () {
@@ -70,6 +96,36 @@ class Home extends StatelessWidget {
                   title: Text("About"),
                   leading: Icon(Icons.help_center),
                   onTap: () {},
+                ),
+
+                ListTile(
+                  title: Text("Favorits"),
+                  leading: Icon(Icons.favorite),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FavoriteItems()),
+                    );
+                  },
+                ),
+
+                ListTile(
+                  title: Text("Dark Mode"),
+                  leading: Icon(Icons.dark_mode),
+                  trailing: Consumer<ThemeProvider>(
+                    builder: (context, val, child) {
+                      return Switch(
+                        activeThumbColor: Colors.green,
+                        activeTrackColor: Colors.black,
+                        inactiveThumbColor: Colors.red,
+                        inactiveTrackColor: Colors.white,
+                        value: val.isDark,
+                        onChanged: (value) {
+                          val.toggleTheme();
+                        },
+                      );
+                    },
+                  ),
                 ),
 
                 ListTile(
@@ -137,206 +193,704 @@ class Home extends StatelessWidget {
             actions: [ProductAndPrice()],
           ),
 
-          body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TabBarView(
-              children: [
-                GridView.builder(
-                  itemCount: cars.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 5,
-                    mainAxisSpacing: 40,
-                    crossAxisCount: 1,
-                    childAspectRatio: 3 / 2,
-                  ),
+          body: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 60,
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: "Search for a product...",
+                      prefix: Icon(Icons.search),
+                      suffix: IconButton(
+                        onPressed: () {
+                          searchController.clear();
+                          setState(() {
+                            filteredCars = cars;
+                            filteredFlowers = flowers;
+                            filteredTshirts = tshirts;
+                          });
+                        },
+                        icon: Icon(Icons.clear),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setState(() {
+                        filteredCars = cars.where((car) {
+                          return car.name.toLowerCase().contains(
+                            value.toLowerCase(),
+                          );
+                        }).toList();
 
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) =>
-                                Details2(product_cars: cars[index])),
-                          ),
-                        );
-                      },
-                      child: GridTile(
-                        footer: Padding(
-                          padding: const EdgeInsets.only(bottom: 20.0),
-                          child: GridTileBar(
-                            trailing: Consumer<Cart>(
-                              builder: (context, value, child) {
-                                return IconButton(
-                                  onPressed: () {
-                                    value.add(cars[index]);
-                                  },
-                                  icon: Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 33,
+                        filteredTshirts = tshirts.where((shirt) {
+                          return shirt.name.toLowerCase().contains(
+                            value.toLowerCase(),
+                          );
+                        }).toList();
+
+                        filteredFlowers = flowers.where((flower) {
+                          return flower.name.toLowerCase().contains(
+                            value.toLowerCase(),
+                          );
+                        }).toList();
+                      });
+                    },
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TabBarView(
+                    children: [
+                      GridView.builder(
+                        itemCount: filteredCars.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 40,
+                          crossAxisCount: 1,
+                          childAspectRatio: 3 / 2,
+                        ),
+
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: ((context) => Details2(
+                                    product_cars: filteredCars[index],
+                                  )),
+                                ),
+                              );
+                            },
+                            child: GridTile(
+                              footer: Padding(
+                                padding: const EdgeInsets.only(bottom: 20.0),
+                                child: GridTileBar(
+                                  trailing: Row(
+                                    children: [
+                                      Consumer<Favorites>(
+                                        builder: (context, value, child) {
+                                          bool isFav = value.isFavorite(
+                                            filteredCars[index],
+                                          );
+
+                                          return IconButton(
+                                            onPressed: () {
+                                              value.toggleFavorite(
+                                                filteredCars[index],
+                                              );
+
+                                              bool isFavv = value.isFavorite(
+                                                filteredCars[index],
+                                              );
+
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).hideCurrentSnackBar();
+
+                                              isFavv
+                                                  ? ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          "Item added from favorite",
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 18,
+                                                          ),
+                                                        ),
+                                                        action: SnackBarAction(
+                                                          label: "Cancel",
+                                                          onPressed: () {
+                                                            value.removeFavorite(
+                                                              filteredCars[index],
+                                                            );
+                                                          },
+                                                        ),
+
+                                                        duration: Duration(
+                                                          seconds: 3,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      SnackBar(
+                                                        content: Text(
+                                                          "Item removed from favorite",
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 18,
+                                                          ),
+                                                        ),
+                                                        action: SnackBarAction(
+                                                          label: "Cancel",
+                                                          onPressed: () {
+                                                            value.addFavorite(
+                                                              filteredCars[index],
+                                                            );
+                                                          },
+                                                        ),
+
+                                                        duration: Duration(
+                                                          seconds: 3,
+                                                        ),
+                                                      ),
+                                                    );
+
+                                              Future.delayed(
+                                                const Duration(seconds: 3),
+                                                () {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).hideCurrentSnackBar();
+                                                  }
+                                                },
+                                              );
+                                            },
+                                            icon: Icon(
+                                              isFav
+                                                  ? Icons.favorite
+                                                  : Icons.favorite_border,
+                                              color: isFav
+                                                  ? Colors.red
+                                                  : Colors.white,
+                                              size: 28,
+                                            ),
+                                          );
+                                        },
+                                      ),
+
+                                      Consumer<Cart>(
+                                        builder: (context, value, child) {
+                                          return IconButton(
+                                            onPressed: () {
+                                              value.add(filteredCars[index]);
+
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).hideCurrentSnackBar();
+
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    "Car addeed to card ✅",
+                                                    style: TextStyle(
+                                                      color: Colors.blue,
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+
+                                                  action: SnackBarAction(
+                                                    label: "Undo",
+                                                    onPressed: () {
+                                                      value.remove(
+                                                        filteredCars[index],
+                                                      );
+                                                    },
+                                                  ),
+
+                                                  duration: const Duration(
+                                                    seconds: 2,
+                                                  ),
+                                                ),
+                                              );
+
+                                              Future.delayed(
+                                                const Duration(seconds: 2),
+                                                () {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).hideCurrentSnackBar();
+                                                  }
+                                                },
+                                              );
+                                            },
+                                            icon: Icon(
+                                              Icons.add,
+                                              color: Colors.white,
+                                              size: 33,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                );
-                              },
-                            ),
-                            leading: Text(
-                              "\$ ${cars[index].price}",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                              ),
-                            ),
+                                  leading: Text(
+                                    "\$ ${filteredCars[index].price}",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                    ),
+                                  ),
 
-                            title: Text(""),
-                          ),
-                        ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top: -2,
-                              right: 0,
-                              left: 0,
-                              bottom: 5,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(25),
-                                child: Image.asset(cars[index].imgPath),
+                                  title: Text(
+                                    " ${filteredCars[index].name}",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    top: -2,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 5,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Image.asset(
+                                        filteredCars[index].imgPath,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
 
-                GridView.builder(
-                  itemCount: tshirts.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 5,
-                    mainAxisSpacing: 40,
-                    crossAxisCount: 1,
-                    childAspectRatio: 3 / 3,
-                  ),
+                      GridView.builder(
+                        itemCount: filteredTshirts.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 40,
+                          crossAxisCount: 1,
+                          childAspectRatio: 3 / 3,
+                        ),
 
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) =>
-                                Details3(product_shirts: tshirts[index])),
-                          ),
-                        );
-                      },
-                      child: GridTile(
-                        footer: GridTileBar(
-                          trailing: Consumer<Cart>(
-                            builder: (context, value, child) {
-                              return IconButton(
-                                onPressed: () {
-                                  value.add(tshirts[index]);
-                                },
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Colors.black,
-                                  size: 33,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: ((context) => Details3(
+                                    product_shirts: filteredTshirts[index],
+                                  )),
                                 ),
                               );
                             },
-                          ),
+                            child: GridTile(
+                              footer: GridTileBar(
+                                trailing: Row(
+                                  children: [
+                                    Consumer<Favorites>(
+                                      builder: (context, value, child) {
+                                        bool isFav = value.isFavorite(
+                                          filteredTshirts[index],
+                                        );
 
-                          leading: Text(
-                            "\$ ${tshirts[index].price}",
-                            style: TextStyle(color: Colors.black, fontSize: 20),
-                          ),
+                                        return IconButton(
+                                          onPressed: () {
+                                            value.toggleFavorite(
+                                              filteredTshirts[index],
+                                            );
 
-                          title: Text(""),
-                        ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top: -2,
-                              right: 0,
-                              left: 0,
-                              bottom: 5,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(25),
-                                child: Image.asset(tshirts[index].imgPath),
+                                            bool isFavv = value.isFavorite(
+                                              filteredTshirts[index],
+                                            );
+
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).hideCurrentSnackBar();
+
+                                            isFavv
+                                                ? ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        "Item added from favorite",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      action: SnackBarAction(
+                                                        label: "Cancel",
+                                                        onPressed: () {
+                                                          value.removeFavorite(
+                                                            filteredTshirts[index],
+                                                          );
+                                                        },
+                                                      ),
+
+                                                      duration: Duration(
+                                                        seconds: 3,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        "Item removed from favorite",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      action: SnackBarAction(
+                                                        label: "Cancel",
+                                                        onPressed: () {
+                                                          value.addFavorite(
+                                                            filteredTshirts[index],
+                                                          );
+                                                        },
+                                                      ),
+
+                                                      duration: Duration(
+                                                        seconds: 3,
+                                                      ),
+                                                    ),
+                                                  );
+
+                                            Future.delayed(
+                                              const Duration(seconds: 3),
+                                              () {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).hideCurrentSnackBar();
+                                                }
+                                              },
+                                            );
+                                          },
+                                          icon: Icon(
+                                            isFav
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isFav
+                                                ? Colors.red
+                                                : Colors.grey,
+                                            size: 28,
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+                                    Consumer<Cart>(
+                                      builder: (context, value, child) {
+                                        return IconButton(
+                                          onPressed: () {
+                                            value.add(filteredTshirts[index]);
+
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  "T-Shirt added to card ✅",
+                                                  style: TextStyle(
+                                                    color: Colors.blue,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                action: SnackBarAction(
+                                                  label: "Undo",
+                                                  onPressed: () {
+                                                    value.remove(
+                                                      filteredTshirts[index],
+                                                    );
+                                                  },
+                                                ),
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+
+                                            Future.delayed(
+                                              const Duration(seconds: 2),
+                                              () {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).hideCurrentSnackBar();
+                                                }
+                                              },
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.add,
+                                            color: Colors.purple,
+                                            size: 33,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                leading: Text(
+                                  "\$ ${filteredTshirts[index].price}",
+                                  style: TextStyle(
+                                    color: Colors.purple,
+                                    fontSize: 20,
+                                  ),
+                                ),
+
+                                title: Text(
+                                  " ${filteredTshirts[index].name}",
+                                  style: TextStyle(
+                                    color: Colors.purple,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    top: -2,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 5,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Image.asset(
+                                        filteredTshirts[index].imgPath,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
 
-                GridView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  itemCount: flowers.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 5,
-                    mainAxisSpacing: 40,
-                    crossAxisCount: 1,
-                    // childAspectRatio: 3 / 2,
-                  ),
+                      GridView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: filteredFlowers.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisSpacing: 5,
+                          mainAxisSpacing: 40,
+                          crossAxisCount: 1,
+                          // childAspectRatio: 3 / 2,
+                        ),
 
-                  itemBuilder: (BuildContext context, int index) {
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: ((context) =>
-                                Details1(product_flower: flowers[index])),
-                          ),
-                        );
-                      },
-                      child: GridTile(
-                        footer: GridTileBar(
-                          trailing: Consumer<Cart>(
-                            builder: (context, value, child) {
-                              return IconButton(
-                                onPressed: () {
-                                  value.add(flowers[index]);
-                                },
-                                icon: Icon(
-                                  Icons.add,
-                                  color: Colors.black,
-                                  size: 33,
+                        itemBuilder: (BuildContext context, int index) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: ((context) => Details1(
+                                    product_flower: filteredFlowers[index],
+                                  )),
                                 ),
                               );
                             },
-                          ),
+                            child: GridTile(
+                              footer: GridTileBar(
+                                trailing: Row(
+                                  children: [
+                                    Consumer<Favorites>(
+                                      builder: (context, value, child) {
+                                        bool isFav = value.isFavorite(
+                                          filteredFlowers[index],
+                                        );
 
-                          leading: Text(
-                            "\$ ${flowers[index].price}",
-                            style: TextStyle(color: Colors.black, fontSize: 20),
-                          ),
+                                        return IconButton(
+                                          onPressed: () {
+                                            value.toggleFavorite(
+                                              filteredFlowers[index],
+                                            );
 
-                          title: Text(""),
-                        ),
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top: -2,
-                              right: 0,
-                              left: 0,
-                              bottom: 5,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(25),
-                                child: Image.asset(flowers[index].imgPath),
+                                            bool isFavv = value.isFavorite(
+                                              filteredFlowers[index],
+                                            );
+
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).hideCurrentSnackBar();
+
+                                            isFavv
+                                                ? ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        "Item added from favorite",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      action: SnackBarAction(
+                                                        label: "Cancel",
+                                                        onPressed: () {
+                                                          value.removeFavorite(
+                                                            filteredFlowers[index],
+                                                          );
+                                                        },
+                                                      ),
+
+                                                      duration: Duration(
+                                                        seconds: 3,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : ScaffoldMessenger.of(
+                                                    context,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        "Item removed from favorite",
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                          fontSize: 18,
+                                                        ),
+                                                      ),
+                                                      action: SnackBarAction(
+                                                        label: "Cancel",
+                                                        onPressed: () {
+                                                          value.addFavorite(
+                                                            filteredFlowers[index],
+                                                          );
+                                                        },
+                                                      ),
+
+                                                      duration: Duration(
+                                                        seconds: 3,
+                                                      ),
+                                                    ),
+                                                  );
+
+                                            Future.delayed(
+                                              const Duration(seconds: 3),
+                                              () {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).hideCurrentSnackBar();
+                                                }
+                                              },
+                                            );
+                                          },
+                                          icon: Icon(
+                                            isFav
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: isFav
+                                                ? Colors.red
+                                                : Colors.black,
+                                            size: 28,
+                                          ),
+                                        );
+                                      },
+                                    ),
+
+                                    Consumer<Cart>(
+                                      builder: (context, value, child) {
+                                        return IconButton(
+                                          onPressed: () {
+                                            value.add(filteredFlowers[index]);
+
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  "Flower addeed to card ✅",
+                                                  style: TextStyle(
+                                                    color: Colors.blue,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                                action: SnackBarAction(
+                                                  label: "Undo",
+                                                  onPressed: () {
+                                                    value.remove(
+                                                      filteredFlowers[index],
+                                                    );
+                                                  },
+                                                ),
+
+                                                duration: Duration(seconds: 2),
+                                              ),
+                                            );
+
+                                            Future.delayed(
+                                              const Duration(seconds: 2),
+                                              () {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    context,
+                                                  ).hideCurrentSnackBar();
+                                                }
+                                              },
+                                            );
+                                          },
+                                          icon: Icon(
+                                            Icons.add,
+                                            color: Colors.black,
+                                            size: 33,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                leading: Text(
+                                  "\$ ${filteredFlowers[index].price}",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
+                                  ),
+                                ),
+
+                                title: Text(
+                                  " ${filteredFlowers[index].name}",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    top: -2,
+                                    right: 0,
+                                    left: 0,
+                                    bottom: 5,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Image.asset(
+                                        filteredFlowers[index].imgPath,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

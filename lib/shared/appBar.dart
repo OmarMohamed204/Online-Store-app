@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loginpages/pages/checkout.dart';
+import 'package:loginpages/pages/notifications.dart';
 import 'package:loginpages/provider/cart.dart';
 import 'package:provider/provider.dart';
 
@@ -53,6 +54,15 @@ class ProductAndPrice extends StatelessWidget {
             "\$ ${value.pricee}",
             style: TextStyle(color: Colors.white, fontSize: 19),
           ),
+        ),
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => Notifications()),
+            );
+          },
+          icon: const Icon(Icons.notifications, color: Colors.white, size: 30),
         ),
       ],
     );
