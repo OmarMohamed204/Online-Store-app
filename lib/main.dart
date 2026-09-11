@@ -6,6 +6,7 @@ import 'package:loginpages/provider/favorites.dart';
 import 'package:loginpages/provider/theme.dart';
 import 'package:provider/provider.dart';
 
+
 void main() {
   runApp(const OnlineStore());
 }

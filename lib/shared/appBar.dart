@@ -29,7 +29,8 @@ class ProductAndPrice extends StatelessWidget {
               ),
             ),
 
-            Positioned(
+            if (value.itemCount > 0) 
+              Positioned(
               bottom: 22,
               child: Container(
                 padding: EdgeInsets.all(5),
